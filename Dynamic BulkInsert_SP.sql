@@ -1,3 +1,20 @@
+IF OBJECT_ID('crud.USP_Bulk_Insert') IS NOT NULL
+DROP PROCEDURE crud.USP_Bulk_Insert;
+GO
+CREATE PROCEDURE crud.USP_Bulk_Insert (
+									  @Directory NVARCHAR(MAX), --The directory of the source CSV file (eg.Z:\My Computer\Source Directory 
+									  @File NVARCHAR(500), --The Name of the source file without the extenstion (e.g. SourceFile)
+									  @Schema NVARCHAR(100) = 'dbo', --The Target Schema. Default is dbo
+									  @Table NVARCHAR(500), --The name of the target table
+									  @SaveConstraints BIT = 0, --Should constraints be saved? if yes (1), All existing Table constraints will be saved in a table: dbo.constraintsSaved
+									  @DropConstraints BIT =0, --Should Constriants be dropped? If yes, all table constraints will be dropped to ease the loading of data.
+									  @RestoreConstraints BIT = 0, --When set to 1, all constraints found in the create_script column of table: dbo.constraintsSaved will be used in restoring constraints.
+									  @DeleteDataFromTables BIT =0, --When set to 1, all data will be deleted from all tables in the datababse. In the event that parameter @SaveConstraints is also set to 1, or data is found in the dbo.constriantsSaved table, they will be printed out in the message window.
+									  @MoveDataToProduction BIT = 0, -- When set to 1 (yes), data found in the staging table will be moved to the target table.
+									  @DeleteStagingTable BIT = 0 --If set to 1, Staging table will be dropped.
+									  )
+AS
+BEGIN
 /*****************************************************************************************************************************/
 --This SP was created primarily to load CSV files to SQL Server tables. However, it can be used for the following DML/DDL functions:
 --1.) Dropping and restoring constraints
@@ -15,23 +32,6 @@ A little note on how it works:
  Of course, the steps described above will be skipped, and additional processes executed based on user input.
  For instance setting parameter @DeleteDateFromTables to 1, will delete data from all tables in the database provided constraints do not exist.If constraints are stored in table dbo.ConstraintsSaved, it will be outputed in the messages window and user must execute manually to restore constraints.
 */
-IF OBJECT_ID('dbo.USP_Bulk_Insert') IS NOT NULL
-DROP PROCEDURE dbo.USP_Bulk_Insert;
-GO
-CREATE PROCEDURE dbo.USP_Bulk_Insert (
-									  @Directory NVARCHAR(MAX), --The directory of the source CSV file (eg.Z:\My Computer\Source Directory 
-									  @File NVARCHAR(500), --The Name of the source file without the extenstion (e.g. SourceFile)
-									  @Schema NVARCHAR(100) = 'dbo', --The Target Schema. Default is dbo
-									  @Table NVARCHAR(500), --The name of the target table
-									  @SaveConstraints BIT = 0, --Should constraints be saved? if yes (1), All existing Table constraints will be saved in a table: dbo.constraintsSaved
-									  @DropConstraints BIT =0, --Should Constriants be dropped? If yes, all table constraints will be dropped to ease the loading of data.
-									  @RestoreConstraints BIT = 0, --When set to 1, all constraints found in the create_script column of table: dbo.constraintsSaved will be used in restoring constraints.
-									  @DeleteDataFromTables BIT =0, --When set to 1, all data will be deleted from all tables in the datababse. In the event that parameter @SaveConstraints is also set to 1, or data is found in the dbo.constriantsSaved table, they will be printed out in the message window.
-									  @MoveDataToProduction BIT = 0, -- When set to 1 (yes), data found in the staging table will be moved to the target table.
-									  @DeleteStagingTable BIT = 0 --If set to 1, Staging table will be dropped.
-									  )
-AS
-BEGIN
 --**************************************************************
 	--Check User Input on Parameter: @SaveConstraints.
 IF @SaveConstraints = 0
