@@ -7,11 +7,11 @@ Category - SubCategory-Frequency-Description
 Examples :: Admin-Backup-Daily-Backup ODS
 		 :: Data-Interface-Daily-Import Employee Data From HRIS
 *********************************************************************************************************************************************************************************************/
-Declare @JobName sysname = 'LoadDataCatalog'; --Name of the Job, be specific: <Function>_<St>
+Declare @JobName sysname = 'Migration_SPRun'; --Name of the Job, be specific: <Function>_<St>
 Declare @ReturnCode INT = 0; 
 Declare @JobCategory sysname = 'Guardian-DataMigration' --Guardian-Interface, Guardian-Datamigration, Guardian--Maintenance Guardian-Report Guardian-Datawarehouse
 Declare @IsJobEnabled INT = 1;
-Declare @JobDescription nvarchar(1000) = N'Loading of mapping data into the data catalog database';
+Declare @JobDescription nvarchar(1000) = N'Runs the stored procedure Migration.dbo.MigrationSPRun_Run in order to fire off all Active migration pipeline stored procs.';
 Declare @JobOwnerLoginName sysname = (Select SUSER_SNAME()); --N'DCS\sa.tadepoju';
 Declare @TargetServerName sysname = '(local)'; -- $(ServerName)
 -------------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ Declare @JobStepsTable Table
 Insert @JobStepsTable
 Select   StepId, StepName, SSISProjectName, SSISFolderName, StepType, IsEnabled, OnSuccessAction, OnSuccessStepId, OnFailureAction, OnFailureStepId, RetryAttempts, RetryInterval, ProxyName, SQLCommand
 From (values 
-		  (1,'Run DataCatalog Package', 'DataCatalog','Migration', 'SSIS',1,1,2,2,0,0,0,'svc.guardianssis','/ISSERVER "\"\SSISDB\Migration\DataCatalog\LoadDataCatalog.dtsx\"" /CALLERINFO SQLAGENT /REPORTING V /X86 /SERVER $(ServerName) /ENVREFERENCE {{EnvRefId}}')
+		  (1,'Run Migration Master Stored Procedure', '','', 'TSQL',1,1,0,2,0,0,0,'','Exec Migration.dbo.MigrationSPRun_Run')
 	   --,(2,'Rebuild Indexes','SSIS',1,3,0,2,0,0,0,'svc.guardianssis','/ISSERVER "\"\SSISDB\Migration\SourceSystemReplication\OLCR_System.dtsx\"" /SERVER GuardianMig01P /Par "\"DataRetentionPolicyID(Int32)\"";1 /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1 /Par "\"$ServerOption::SYNCHRONIZED(Boolean)\"";True /CALLERINFO SQLAGENT /REPORTING V /X86')
 	   --,(3,'Rebuild Indexes1','SSIS',1,3,0,2,0,0,0,'svc.guardianssis','/ISSERVER "\"\SSISDB\Migration\SourceSystemReplication\OLCR_System.dtsx\"" /SERVER GuardianMig01P /Par "\"DataRetentionPolicyID(Int32)\"";1 /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1 /Par "\"$ServerOption::SYNCHRONIZED(Boolean)\"";True /CALLERINFO SQLAGENT /REPORTING E')
 	   --,(4,'Rebuild Indexes2','SSIS',1,3,0,2,0,0,0,'svc.guardianssis','/ISSERVER "\"\SSISDB\Migration\SourceSystemReplication\OLCR_System.dtsx\"" /SERVER GuardianMig01P /Par "\"DataRetentionPolicyID(Int32)\"";1 /Par "\"$ServerOption::LOGGING_LEVEL(Int16)\"";1 /Par "\"$ServerOption::SYNCHRONIZED(Boolean)\"";True /CALLERINFO SQLAGENT /REPORTING E')
